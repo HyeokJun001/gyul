@@ -111,6 +111,67 @@ body {
   min-height: 140px;
 }
 
+.form-field textarea.message-input {
+  min-height: 180px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.parsed-preview {
+  margin-top: 24px;
+  padding: 24px;
+  background: #f8fafc;
+  border-radius: 20px;
+  border: 2px solid #e4eaf6;
+}
+
+.parsed-preview h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #1f2a3f;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.parsed-preview h3::before {
+  content: "✓";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #40a483;
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.orders-list {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-submit-btn {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.submit-all-btn {
+  margin-top: 24px;
+  width: 100%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 16px 30px rgba(102, 126, 234, 0.3);
+}
+
+.submit-all-btn:not(:disabled):hover {
+  box-shadow: 0 20px 35px rgba(102, 126, 234, 0.35);
+}
+
 .items-section {
   margin-top: 8px;
   border-top: 1px solid #eef2fb;

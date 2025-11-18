@@ -33,7 +33,7 @@ class OrderItemOut(BaseModel):
     box_count: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class OrderOut(BaseModel):
@@ -46,5 +46,5 @@ class OrderOut(BaseModel):
     items: List[OrderItemOut]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
