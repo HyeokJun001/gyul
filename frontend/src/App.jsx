@@ -2,6 +2,43 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 
+const INVALID_NAME_TOKENS = ["받는", "받는사람", "받는분", "받는이", "받는사람성함", "받는사람이름"];
+
+const NAME_LABEL_REGEX =
+  /(받는\s*(?:사람|분|이름|성함)|수령인|수취인)\s*(?:성함|이름)?\s*[:：]\s*([가-힣]{2,4})/gi;
+
+const cleanNameText = (value) => {
+  if (!value) return "";
+  const candidate = value.replace(/[^가-힣]/g, "").trim();
+  if (!candidate || INVALID_NAME_TOKENS.includes(candidate)) return "";
+  return candidate;
+};
+
+const extractNameFromLabels = (text) => {
+  if (!text) return "";
+  const matches = [...text.matchAll(NAME_LABEL_REGEX)];
+  if (matches.length === 0) return "";
+  const last = matches[matches.length - 1][2]; // 가장 마지막 라벨 사용
+  return cleanNameText(last);
+};
+
+const cleanAddressText = (value) => {
+  if (!value) return "";
+  let result = value
+    .replace(/^(받는\s*(주소지|주소)\s*[:：]?)/i, "")
+    .replace(/^주소\s*[:：]?/i, "")
+    .trim();
+  // 품목/중량/박스 정보 제거
+  result = result.replace(
+    /(혼합과|대과)\s*\d+\s*k?g\s*(?:\/?\s*(\d+)?\s*박스)?/gi,
+    ""
+  );
+  result = result.replace(/\d+\s*kg\s*(\/\s*\d+\s*박스)?/gi, "");
+  result = result.replace(/\d+\s*박스/gi, "");
+  result = result.replace(/\/\s*$/g, "");
+  return result.trim();
+};
+
 // 단일 메시지 파싱 함수 (라벨 기반 형식 지원)
 function parseSingleMessage(text) {
   if (!text || text.trim() === "") {
@@ -17,14 +54,15 @@ function parseSingleMessage(text) {
 
   // 라벨 기반 파싱 시도
   // "받는 사람 :" 또는 "받는사람 :" 패턴
-  const receiverNameMatch = text.match(/받는\s*사람\s*[:：]\s*([가-힣]{2,4})/);
-  if (receiverNameMatch) {
-    result.receiver_name = receiverNameMatch[1].trim();
+  const labeledName = extractNameFromLabels(text);
+  if (labeledName) {
+    result.receiver_name = labeledName;
   } else {
     // 대괄호 형식: [노시준]
     const bracketMatch = text.match(/\[([가-힣]{2,4})\]/);
     if (bracketMatch) {
-      result.receiver_name = bracketMatch[1].trim();
+      const cleaned = cleanNameText(bracketMatch[1]);
+      if (cleaned) result.receiver_name = cleaned;
     } else {
       // 전화번호 앞의 이름 추출
       const phoneRegex = /010[-.\s]?\d{4}[-.\s]?\d{4}/;
@@ -33,7 +71,8 @@ function parseSingleMessage(text) {
         const beforePhone = text.substring(0, phoneMatch.index).trim();
         const nameMatch = beforePhone.match(/([가-힣]{2,4})/);
         if (nameMatch) {
-          result.receiver_name = nameMatch[1].trim();
+          const cleaned = cleanNameText(nameMatch[1]);
+          if (cleaned) result.receiver_name = cleaned;
         }
       }
     }
@@ -65,7 +104,7 @@ function parseSingleMessage(text) {
       : afterLabel;
     
     // 여러 줄 주소 합치기 (공백으로)
-    addressText = addressText.replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
+    addressText = cleanAddressText(addressText.replace(/\n+/g, " ").replace(/\s+/g, " ").trim());
     result.address = addressText;
   } else if (phoneMatch) {
     // 전화번호 뒤부터 수량/박스 정보 전까지가 주소
@@ -83,7 +122,7 @@ function parseSingleMessage(text) {
     addressText = addressText.replace(/받는사람\s*[:：].*$/m, "").trim();
     addressText = addressText.replace(/연락처\s*[:：].*$/m, "").trim();
     
-    result.address = addressText.replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
+    result.address = cleanAddressText(addressText.replace(/\n+/g, " ").replace(/\s+/g, " ").trim());
   }
 
   // 수량/품목 정보 찾기: "수량 : 대과 10kg 2박스"
@@ -226,6 +265,14 @@ function App() {
   const [response, setResponse] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState({}); // 각 주문별 제출 상태
 
+  const resetForm = () => {
+    setRawMessage("");
+    setParsedOrders([]);
+    setOrderData([]);
+    setResponse(null);
+    setIsSubmitting({});
+  };
+
   // 메시지가 변경될 때마다 파싱
   useEffect(() => {
     if (rawMessage.trim()) {
@@ -346,7 +393,7 @@ function App() {
     <div className="app-shell">
       <header className="hero">
         <p className="chakra">GYUL FRESH</p>
-        <h1>과일 주문 등록</h1>
+        <h1>귤 주문 등록 by 아들내미</h1>
         <p className="sub">
           카톡/문자 복붙만으로 주문을 저장하고, 품목 내역까지 한 번에 관리해
           보세요.
@@ -359,9 +406,16 @@ function App() {
           <div className="order-form">
             <div className="form-field">
               <label>원본 메시지 (카톡/문자 복붙)</label>
+              <button
+                type="button"
+                className="ghost-btn reset-btn"
+                onClick={resetForm}
+              >
+                새로 작성하기
+              </button>
               <textarea
                 rows={10}
-                placeholder="여러 주문을 한 번에 복붙하세요:&#10;[유한슬] 혼합과 10kg [총 4박스]&#10;유한슬 010-3450-9297 경기도 양평군 용문면 요곡길 18 비바체아파트 102동 602호 2박스&#10;유한슬 010-3450-9297서울시 강서구 초록마을로 32길 29 인터시티빌라 202호 1박스"
+                placeholder="여러 주문을 한 번에 복붙하세요:&#10;"
                 value={rawMessage}
                 onChange={(e) => setRawMessage(e.target.value)}
                 className="message-input"
@@ -381,7 +435,7 @@ function App() {
                       <div className="form-field">
                         <label>받는 사람 이름</label>
                         <input
-                          placeholder="예) 박환희"
+                          placeholder="예) 김길규"
                           value={order.receiver_name}
                           onChange={(e) => handleChangeOrderField(orderIndex, "receiver_name", e.target.value)}
                           required

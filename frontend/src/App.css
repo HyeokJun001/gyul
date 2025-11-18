@@ -79,11 +79,21 @@ body {
   gap: 18px;
 }
 
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .form-field label {
   display: block;
-  margin-bottom: 6px;
   font-weight: 600;
   color: #2b3954;
+}
+
+.form-field .reset-btn {
+  align-self: flex-end;
+  margin-bottom: 4px;
 }
 
 .form-field input,
@@ -230,6 +240,18 @@ button {
 
 .ghost-btn:hover {
   background: #eef2fb;
+}
+
+.ghost-btn.reset-btn {
+  color: #3b76f6;
+  border-color: rgba(59, 118, 246, 0.4);
+  background: rgba(59, 118, 246, 0.12);
+  font-weight: 600;
+}
+
+.ghost-btn.reset-btn:hover {
+  background: rgba(59, 118, 246, 0.18);
+  box-shadow: 0 8px 18px rgba(59, 118, 246, 0.2);
 }
 
 .ghost-btn.danger {
