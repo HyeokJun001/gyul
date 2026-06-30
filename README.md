@@ -4,6 +4,15 @@
 
 카카오톡/문자 메시지로 받은 과일 주문을 자동으로 파싱하여 MySQL 데이터베이스에 저장하는 웹 애플리케이션입니다.
 
+## 📌 프로젝트 배경
+
+소규모 과일 판매에서 주문은 대부분 **카카오톡·문자**로 들어오는데, 이를 사람이 일일이 엑셀에 옮겨
+적는 과정에서 누락·오타가 생깁니다. 이 반복 작업을 줄이기 위해 주문 메시지를 받아 **구조화된 데이터로
+저장·조회**하는 API/웹을 만들었습니다.
+
+- 주문 1건 = 주문 정보(받는 사람·연락처·주소) + 여러 품목(종류·중량·박스 수)의 **1:N 구조**
+- 주문과 품목은 **하나의 트랜잭션으로 원자적 저장**되어, 품목이 하나라도 잘못되면 전체가 롤백됩니다.
+
 ## 🚀 기술 스택
 
 ### Backend
@@ -21,20 +30,23 @@
 
 ```
 gyul/
-├── backend/          # FastAPI 백엔드
-│   ├── main.py       # FastAPI 앱 엔트리포인트
-│   ├── database.py   # DB 연결 설정
-│   ├── models.py     # SQLAlchemy 모델
-│   ├── schemas.py    # Pydantic 스키마
-│   ├── crud.py       # DB CRUD 로직
+├── backend/                 # FastAPI 백엔드
+│   ├── main.py              # FastAPI 앱 엔트리포인트
+│   ├── database.py          # DB 연결 설정
+│   ├── models.py            # SQLAlchemy 모델 (Order 1:N OrderItem)
+│   ├── schemas.py           # Pydantic 스키마
+│   ├── crud.py              # 주문 저장 로직 (트랜잭션 원자성)
+│   ├── conftest.py          # 테스트 픽스처 (인메모리 SQLite)
+│   ├── tests/               # pytest 테스트
 │   ├── requirements.txt
-│   └── .env          # 환경 변수 (gitignore됨)
+│   └── requirements-dev.txt # 테스트 전용 의존성
 │
-└── frontend/         # React 프런트엔드
-    ├── src/
-    │   ├── App.jsx   # 메인 컴포넌트
-    │   └── App.css   # 스타일
-    └── package.json
+├── frontend/                # React 프런트엔드
+│   └── src/
+│       ├── App.jsx          # 메인 컴포넌트
+│       └── App.css
+│
+└── .github/workflows/       # GitHub Actions CI (push·PR 시 pytest 자동 실행)
 ```
 
 ## 🛠️ 설치 및 실행
