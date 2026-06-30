@@ -111,10 +111,10 @@ npm run dev
 **Request Body:**
 ```json
 {
-  "receiver_name": "박환희",
-  "phone": "010-3095-0628",
-  "address": "광주광역시 임방울대로142-12, 삼성아파트 111-2204",
-  "raw_message": "받는 사람 성함 : 박환희 ...",
+  "receiver_name": "박xx",
+  "phone": "010-xxxx-xxxx",
+  "address": "광주광역시 OO구 OO로 00, OO아파트 000-000",
+  "raw_message": "받는 사람 성함 : 박xx ...",
   "items": [
     { "item_type": "혼합과", "kg": 10, "box_count": 1 },
     { "item_type": "혼합과", "kg": 5, "box_count": 2 }

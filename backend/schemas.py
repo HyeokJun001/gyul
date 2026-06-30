@@ -10,16 +10,16 @@ class OrderItemCreate(BaseModel):
 
 
 class OrderCreate(BaseModel):
-    receiver_name: str = Field(..., example="박환희")
-    phone: str = Field(..., example="010-3095-0628")
+    receiver_name: str = Field(..., example="박xx")
+    phone: str = Field(..., example="010-xxxx-xxxx")
     address: str = Field(
         ...,
-        example="광주광역시 임방울대로142-12, 삼성아파트 111-2204",
+        example="광주광역시 OO구 OO로 00, OO아파트 000-000",
     )
     raw_message: Optional[str] = Field(
         None,
         example=(
-            "받는 사람 성함 : 박환희 ... "
+            "받는 사람 성함 : 박xx ... "
             "주문: 혼합과 10KG 1BOX, 혼합과 5KG 2BOX"
         ),
     )

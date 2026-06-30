@@ -3,9 +3,9 @@
 
 def _order_payload(items):
     return {
-        "receiver_name": "박환희",
-        "phone": "010-3095-0628",
-        "address": "광주광역시 임방울대로142-12, 삼성아파트 111-2204",
+        "receiver_name": "박xx",
+        "phone": "010-xxxx-xxxx",
+        "address": "광주광역시 OO구 OO로 00, OO아파트 000-000",
         "raw_message": "혼합과 주문",
         "items": items,
     }
@@ -31,7 +31,7 @@ def test_create_order_persists_order_with_items(client):
     assert res.status_code == 200
     body = res.json()
     assert body["id"] > 0
-    assert body["receiver_name"] == "박환희"
+    assert body["receiver_name"] == "박xx"
     assert len(body["items"]) == 2
 
 
