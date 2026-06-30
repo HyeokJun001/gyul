@@ -1,5 +1,7 @@
 # 과일 주문 관리 시스템 (Fruit Order Management System)
 
+![CI](https://github.com/HyeokJun001/gyul/actions/workflows/ci.yml/badge.svg)
+
 카카오톡/문자 메시지로 받은 과일 주문을 자동으로 파싱하여 MySQL 데이터베이스에 저장하는 웹 애플리케이션입니다.
 
 ## 🚀 기술 스택
@@ -122,6 +124,26 @@ npm run dev
 
 ### GET /orders
 주문 목록 조회 (페이징 지원)
+
+## ✅ 테스트 & 트랜잭션 무결성
+
+주문 생성은 **주문 헤더 + 품목들을 하나의 트랜잭션으로 저장**하며, 품목이 하나라도
+유효하지 않으면 이미 추가된 주문까지 전부 롤백되어 부분 저장을 방지합니다(원자성).
+관련 로직은 `backend/crud.py`의 `create_order`에 있습니다.
+
+```bash
+cd backend
+pip install -r requirements.txt -r requirements-dev.txt
+pytest -v
+```
+
+테스트(`backend/tests/`)는 MySQL 없이 인메모리 SQLite로 격리 실행되며,
+push/PR 시 GitHub Actions(`.github/workflows/ci.yml`)에서 자동으로 돌아갑니다.
+
+- 주문 생성 → 품목 포함 정상 저장
+- 주문 목록 조회
+- 품목 없는 주문 거부 (400)
+- **유효하지 않은 품목 포함 시 주문 전체 롤백 (원자성 검증)**
 
 ## 🎯 향후 계획
 

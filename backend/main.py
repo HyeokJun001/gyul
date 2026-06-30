@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Depends
+import os
+
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
@@ -8,7 +10,9 @@ import models
 import schemas
 import crud
 
-Base.metadata.create_all(bind=engine)
+# 테스트(SQLite) 환경에서는 MySQL 연결을 건너뛴다. 그 외에는 기동 시 테이블을 생성.
+if os.getenv("GYUL_SKIP_DB_INIT") != "1":
+    Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Fruit Order API",
@@ -36,7 +40,10 @@ def health_check():
 
 @app.post("/orders", response_model=schemas.OrderOut)
 def create_order(order_in: schemas.OrderCreate, db: Session = Depends(get_db)):
-    order = crud.create_order(db, order_in)
+    try:
+        order = crud.create_order(db, order_in)
+    except crud.OrderValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return order
 
 
